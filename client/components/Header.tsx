@@ -57,7 +57,6 @@ export default function Header({title,showBack,showSearch,showCart,showMenu,show
               </View>
             </TouchableOpacity>
           )}
-          )}
       </View>
     </View>
   )
