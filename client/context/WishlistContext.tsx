@@ -15,8 +15,8 @@ export function WishlistProvider({children}:{children:ReactNode}){
     }
 
     const toggleWishlist =async(product:Product)=>{
-        const exits =wishlist.find((p)=>p._id===product._id);//hmne poore wishlist ke product se toggling product Id nikaal lia hai
         setWishlist((pre)=>{
+            const exits =pre.some((p)=>p._id ===product._id)
             if(exits){
                 return pre.filter((p)=>p._id !==product._id)
             }

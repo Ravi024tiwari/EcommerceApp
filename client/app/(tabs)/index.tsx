@@ -31,8 +31,10 @@ export default function Home() {
   useEffect(()=>{
     fetchProducts()//here we call to it
   },[])
+
   return (
-    <SafeAreaView className='flex-1' edges={['top']}>
+    
+    <View className='flex-1' >
         <Header title='Forever' showMenu showCart  showLogo />
 
         <ScrollView className='flex-1 px-4' 
@@ -70,6 +72,8 @@ export default function Home() {
                 </View>
               ))}
           </ScrollView>
+
+
           {/**Pagination dots */}
           <View className='flex-row justify-center mt-3 gap-2'>
             {BANNERS.map((_,index)=>(
@@ -128,6 +132,6 @@ export default function Home() {
                 </TouchableOpacity>
             </View>
         </ScrollView>
-    </SafeAreaView>
+    </View>
   )
 }

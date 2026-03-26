@@ -23,7 +23,7 @@ type CartContextType ={
 }
 
 
-const CartContenxt =createContext<CartContextType| undefined>(undefined)
+const CartContext =createContext<CartContextType| undefined>(undefined)
 
 
 export function CartProvider({children}:{children:ReactNode}){
@@ -72,15 +72,15 @@ export function CartProvider({children}:{children:ReactNode}){
    },[])
   return (
     // these are the data that we pass through context into all child component
-    <CartContenxt.Provider value={{cartItems,addToCart,removeFromCart,updateQuantity,clearCart,cartTotal,itemCount,isLoading}}>
+    <CartContext.Provider value={{cartItems,addToCart,removeFromCart,updateQuantity,clearCart,cartTotal,itemCount,isLoading}}>
         {children}
-    </CartContenxt.Provider>
+    </CartContext.Provider>
   )
 }
 
 export function useCart(){
 
-    const context =useContext(CartContenxt)
+    const context =useContext(CartContext)
 
     if(context===undefined){
         throw new Error('useCart must be used within a cartContextProduct..')
