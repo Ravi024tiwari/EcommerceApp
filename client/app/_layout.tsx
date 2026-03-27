@@ -11,11 +11,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function RootLayout() {
   return (
     <GestureHandlerRootView >
-      <SafeAreaView style={{flex:1}}>
+      <SafeAreaView style={{flex:1}} >
           <StatusBar style="dark" />
       <CartProvider>
         <WishlistProvider>
-            <Stack  screenOptions={{ headerShown:false}} />
+            <Stack  screenOptions={{ headerShown:false,contentStyle:{backgroundColor:"#e5e7eb"}}}  />
             <Toast />
         </WishlistProvider>
     </CartProvider>
