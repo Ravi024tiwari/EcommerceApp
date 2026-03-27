@@ -33,7 +33,7 @@ export default function Home() {
   },[])
 
   return (
-    
+
     <View className='flex-1' >
         <Header title='Forever' showMenu showCart  showLogo />
 
@@ -47,7 +47,7 @@ export default function Home() {
           <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false} 
            className='w-full h-48 rounded-xl' scrollEventThrottle={16} 
            onScroll={(e)=>{
-            const slide =Math.ceil(e.nativeEvent.contentOffset.
+            const slide =Math.round(e.nativeEvent.contentOffset.
                x / e.nativeEvent.layoutMeasurement.width )
 
               if(slide !=activeBannerIndex){
