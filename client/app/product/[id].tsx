@@ -21,6 +21,7 @@ import Toast from "react-native-toast-message";
 const { width } = Dimensions.get("window");
 
 export default function ProductDetails() {
+
   const { id } = useLocalSearchParams(); //here we get that product Id
   const router = useRouter();
 
@@ -39,11 +40,12 @@ export default function ProductDetails() {
   const fetchProduct = async () => {
     setProduct(dummyProducts.find((product) => product._id === id) as any); //sabhi dummy products me se sirf whi product find kro
   };
-
+   
   useEffect(() => {
     fetchProduct();
-  }, []);
+  }, [id]);
   //after fetching of Particular product on the ui we will setup the loader
+  
   if (loading) {
     return (
       <SafeAreaView className="flex-1 justify-center items-center">
