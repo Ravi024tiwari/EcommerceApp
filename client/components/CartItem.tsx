@@ -6,11 +6,17 @@ import { COLORS } from '@/constants';
 
 export default function CartItem({item,onRemove,onUpdateQuantity}:CartItemProps) {
 
-    const imageUrl =item.product.images?.[0] ?? '';
+  const imageUrl =item.product.images?.[0] ;
+
   return (
     <View className='flex-row mb-4 bg-white p-3 rounded-xl'>
       <View className='w-20 h-20 bg-gray-100 rounded-lg overflow-hidden mr-3'>
-        <Image source={{uri:imageUrl}} className='w-full h-full' resizeMode='cover'/>
+        {imageUrl ? (
+          <Image source={{ uri: imageUrl }} className='w-full h-full' resizeMode='cover' />
+         ): (
+           <View className='w-full h-full bg-gray-100'/>
+          )
+        }
       </View>
 
 

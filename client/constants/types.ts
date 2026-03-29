@@ -60,6 +60,7 @@ export type CategoryItemProps = {
     onPress?: () => void;
 };
 
+//here all props are conditinal if they pass by the user then ok otherwise not required
 export type HeaderProps = {
     title?: string;
     showBack?: boolean;

@@ -1,18 +1,22 @@
 import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native'
 import React from 'react'
-import { dummyUser } from '@/assets/assets'
+//import { dummyUser } from '@/assets/assets'
 import { useRouter } from 'expo-router'
 import Header from '@/components/Header'
 import { Ionicons } from '@expo/vector-icons'
 import { COLORS, PROFILE_MENU } from '@/constants'
+import { useClerk, useUser } from '@clerk/expo';
 
 export default function Profile() {
-  const {user} ={user:dummyUser}
+  const {user} =useUser();//here we get that logged in user data from the clerk
+  const { signOut } = useClerk()
+
   const router =useRouter();
 
   const handlelogout =async()=>{
     //here we delete the token data from the Async Storage
-    router.replace("/sign-in")
+    signOut();
+    router.replace("/(auth)/sign-in")
   }
 
 
@@ -30,7 +34,7 @@ export default function Profile() {
               </View>
               <Text className='text-primary font-bold text-xl mb-2'>Guest User</Text>
               <Text className='text-secondary text-base mb-8 text-center w-3/4 px-4'>Log to view your profile ,order and addresses..</Text>
-              <TouchableOpacity className='bg-primary w-3/5 py-3 rounded-full items-center shadow-lg' onPress={()=>router.push("/signin")}>
+              <TouchableOpacity className='bg-primary w-3/5 py-3 rounded-full items-center shadow-lg' onPress={()=>router.push("/(auth)/sign-in")}>
                 <Text className='text-white font-bold text-lg'>Login / Signup</Text>
               </TouchableOpacity>
             </View>
@@ -71,7 +75,8 @@ export default function Profile() {
               </View>
 
               {/**Logout Button */}
-              <TouchableOpacity className='flex-row items-center justify-center p-4'  onPress={handlelogout}>
+              <TouchableOpacity className='flex-row items-center justify-center p-4'  onPress={handlelogout} 
+              >
                 <Text className='text-red-500 font-bold ml-2'>Log out</Text>
               </TouchableOpacity>
             </>
