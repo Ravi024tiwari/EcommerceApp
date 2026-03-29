@@ -174,7 +174,13 @@ export default function Page() {
                         <Text className="text-primary text-center mb-2">I need a new code</Text>
                     </Pressable>
 
-                    <Pressable onPress={() => signIn.reset()}>
+                    <Pressable 
+                    onPress={() => {
+                            signIn.reset();
+                            setShowEmailCode(false);
+                            setCode("");
+                         }}
+>
                         <Text className="text-secondary text-center">Start over</Text>
                     </Pressable>
                 </>

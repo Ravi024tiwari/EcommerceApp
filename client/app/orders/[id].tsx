@@ -105,7 +105,7 @@ export default function OrderDetails() {
                     <View className="flex-row items-center mb-2">
                         <Ionicons name="location-outline" size={20} color={COLORS.secondary} />
                         <Text className="text-secondary ml-2 flex-1">
-                            {order.shippingAddress?.street}, {order.shippingAddress?.city}, {order.shippingAddress?.zipCode}, {order.shippingAddress?.country}
+                            {order.shippingAddress?.street}, {order.shippingAddress?.city},{order.shippingAddress?.state}, {order.shippingAddress?.zipCode}, {order.shippingAddress?.country}
                         </Text>
                     </View>
                 </View>
