@@ -23,7 +23,7 @@ export default function Orders() {
     }, []);
 
     return (
-        <View className="flex-1 bg-surface" edges={['top']}>
+        <View className="flex-1 bg-surface" >
             <Header title="My Orders" showBack />
 
             {loading ? (

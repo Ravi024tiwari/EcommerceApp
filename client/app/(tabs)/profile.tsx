@@ -15,7 +15,7 @@ export default function Profile() {
 
   const handlelogout =async()=>{
     //here we delete the token data from the Async Storage
-    signOut();
+    await signOut();
     router.replace("/(auth)/sign-in")
   }
 
