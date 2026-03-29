@@ -5,6 +5,8 @@ import "dotenv/config";
 import express, { Request, Response } from 'express';
 import cors from "cors";
 import dbConnect from "./config/db.js";
+import { clerkMiddleware } from '@clerk/express'
+
 
 const app = express();
 
@@ -13,6 +15,7 @@ await dbConnect();
 // Middleware
 app.use(cors())
 app.use(express.json());
+app.use(clerkMiddleware())
 
 const port = process.env.PORT || 3000;// here we have use the 3000
 
