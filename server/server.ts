@@ -20,7 +20,7 @@ app.use(clerkMiddleware())
 const port = process.env.PORT || 3000;// here we have use the 3000
 
 app.get('/', (req: Request, res: Response) => {
-    res.send('Server is Live!');
+    res.send('Server is Live ..to check the vercel!');
 });
 
 app.listen(port, () => {
