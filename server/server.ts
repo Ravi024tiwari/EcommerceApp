@@ -6,6 +6,7 @@ import express, { Request, Response } from 'express';
 import cors from "cors";
 import dbConnect from "./config/db.js";
 import { clerkMiddleware } from '@clerk/express'
+import { clerkWebhook } from './controllers/webhooks.js';
 
 
 const app = express();
@@ -16,6 +17,9 @@ await dbConnect();
 app.use(cors())
 app.use(express.json());
 app.use(clerkMiddleware())
+
+app.post("/api/clerk",express.raw({type:"application-json"}),clerkWebhook) // here we create the ClerkWebhook EndPoint where 
+//its mange the other users
 
 const port = process.env.PORT || 3000;// here we have use the 3000
 
