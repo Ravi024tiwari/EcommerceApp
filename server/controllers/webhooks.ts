@@ -19,7 +19,7 @@ export const clerkWebhook =async (req:Request, res:Response) => {
         if(user){
             await User.findOneAndUpdate({clerkId:evt.data.id},userData)
         }else{
-            await User.create(userData);//here the new entry of user created on the web hook
+            await User.create(userData);//here the new entry of user created on the web hook and mongodb
         }
     }
     return res.json({
