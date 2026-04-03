@@ -17,6 +17,7 @@ import { COLORS } from "@/constants";
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import api from "@/constants/api";
 
 const { width } = Dimensions.get("window");
 
@@ -38,7 +39,20 @@ export default function ProductDetails() {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const fetchProduct = async () => {
-    setProduct(dummyProducts.find((product) => product._id === id) as any); //sabhi dummy products me se sirf whi product find kro
+      try {
+        const {data} =await api.get(`/product/${id}`)
+        console.log("The single product detials :",data)
+        setProduct(data.data)
+      } catch (error:any) {
+        Toast.show({
+          type:'error',
+          text1:'Failed to fetch the product detials',
+          text2:error.response?.data?.message || "Something went wrong.."
+        })
+      }
+      finally{
+        setLoading(false)
+      }
   };
    
   useEffect(() => {

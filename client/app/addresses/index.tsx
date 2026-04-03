@@ -1,16 +1,24 @@
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View, Modal, TextInput, ActivityIndicator } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View, Modal, TextInput, ActivityIndicator, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/Header";
 import { COLORS } from "@/constants";
 import type { Address } from "@/constants/types";
 import { dummyAddress } from "@/assets/assets";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
+import Toast from "react-native-toast-message";
 
 export default function Addresses() {
+
+    const {getToken} =useAuth();
+
     const [addresses, setAddresses] = useState<Address[]>([]);
     const [loading, setLoading] = useState(true);
     const [modalVisible, setModalVisible] = useState(false);
+
+
 
     // Form state
     const [type, setType] = useState("Home");
@@ -31,8 +39,22 @@ export default function Addresses() {
     }, []);
 
     const fetchAddresses = async () => {
-        setAddresses(dummyAddress as any);
-        setLoading(false);
+        try {
+            setLoading(true)
+            const token =await getToken();
+            const {data} =await api.get("/address",{
+                headers:{Authorization:`Bearer ${token}`}
+            })
+            console.log('The users all address are:',data)
+            if(data.success){
+                setAddresses(data.addresses)
+            }
+        } catch (error:any) {
+            console.error("Failed to fetch the addresses :",error)
+        }
+        finally{
+                setLoading(false);
+        }
     };
 
     const handleEditSearch = (item: Address) => {
@@ -49,13 +71,73 @@ export default function Addresses() {
     };
 
     const handleSaveAddress = async () => {
-        setModalVisible(false);
-        resetForm();
-        fetchAddresses();
+        if(!street || !city || !zipCode || !country){
+                Toast.show({
+                    type:"error",
+                    text1:'Please Enter all address field.'
+                })
+                return
+            }
+
+        try {
+            setSubmitting(true);
+            const token =await getToken();
+            const data ={type,street ,city,state ,zipCode,country ,isDefault};//here we set the data
+
+            if(isEditing && editingId){ // if we are updating the older address with new 
+                await api.put(`/address/${editingId}`,data,{
+                    headers:{
+                        Authorization:`Bearer ${token}`
+                    }
+                })
+            }
+            else{
+                await api.post('/address',data,{
+                    headers:{
+                        Authorization:`Bearer ${token}`
+                    }
+                })
+            }
+
+            setModalVisible(false)
+            resetForm();//reset the filled for
+            fetchAddresses();
+        } catch (error:any) {
+            Toast.show({
+                type:'error',
+                text1:'Failed to save address'
+            })
+        }
+        finally{
+            setSubmitting(false)
+        }
+       
     };
 
-    const handleDeleteAddress = async (id: string) => {
-
+    const handleDeleteAddress = async (id: string) => { 
+        Alert.alert("Delete Address","Are you sure want to delete address?",[
+            {
+                text:"Delete",
+                style:"destructive",
+                onPress:async()=>{
+                    try {
+                        const token =await getToken();
+                        await api.delete(`/address/${id}`,{
+                            headers:{
+                                Authorization:`Bearer ${token}`
+                            }
+                        })
+                        fetchAddresses();
+                    } catch (error:any) {
+                        Toast.show({
+                            type:'error',
+                            text1:'Failed to Delete Address',
+                            text2:error.response?.data?.message || "Something went wrong.."
+                        });
+                    }
+                }
+            }
+        ])
     };
 
     const resetForm = () => {

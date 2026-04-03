@@ -95,52 +95,76 @@ export const addToCart =async(req:Request,res:Response)=>{
 // update Cart item quantity
 // PUT /api/cart/item/:productId
 
-export const updateCartItem =async(req:Request,res:Response)=>{
+export const updateCartItem = async (req: Request, res: Response) => {
     try {
-        const {quantity,size} =req.body ;//here we get that upadated quantity && size of the cart
-        const {productId} =req.params ;
+        const { quantity, size } = req.body;
+        const { productId } = req.params;
 
-        const cart =await Cart.findOne({user:req.user._id}); //here we get that cart of the user
+        const cart = await Cart.findOne({ user: req.user._id });
 
-        if(!cart){
+        if (!cart) {
             return res.status(404).json({
-                success:false,
-                message:"Cart not found"
-            })
+                success: false,
+                message: "Cart not found"
+            });
         }
-        const item  = cart.items.find((item)=>item.product.toString()===productId && item.size === size);
-        // here we are updating the size of that productId item on the cart
 
-        if(quantity <=0){
-            cart.items =cart.items.filter((item)=>item.product.toString()!==productId )
-        }else{
+        const item = cart.items.find(
+            (item) =>
+                item.product.toString() === productId &&
+                item.size === size
+        );
+
+        if (!item) {
+            return res.status(404).json({
+                success: false,
+                message: "Item not found in cart"
+            });
+        }
+
+        if (quantity <= 0) {
+            cart.items = cart.items.filter(
+                (i) =>
+                    !(i.product.toString() === productId && i.size === size)
+            );
+        } else {
             const product = await Product.findById(productId);
-            if(product!.stock < quantity){
-                return res.status(400).json({
-                    success:false,
-                    message:"Insufficient stock.."
-                })
+
+            if (!product) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Product not found"
+                });
             }
-            item!.quantity =quantity;
+
+            if (product.stock < quantity) {
+                return res.status(400).json({
+                    success: false,
+                    message: "Insufficient stock"
+                });
+            }
+
+            item.quantity = quantity;
         }
 
         cart.calculateTotal();
         await cart.save();
-        await cart.populate("items.product","name images price stock");// here we save the new cart data
 
-        return res.status(201).json({
-            success:true,
-            message:"cart updated successfully..",
-            data:cart
-        })
+        await cart.populate("items.product", "name images price stock");
 
-    } catch (error:any) {
+        return res.status(200).json({
+            success: true,
+            message: "Cart updated successfully",
+            data: cart
+        });
+
+    } catch (error: any) {
         return res.status(500).json({
-            success:false,
-            message:error.message
-        })
+            success: false,
+            message: error.message
+        });
     }
-}
+};
 
 // Remove item from the cart
 // delete /api/cart/item/:productId
@@ -188,15 +212,24 @@ export const removeCartItem =async(req:Request,res:Response)=>{
 export const clearCart =async(req:Request,res:Response)=>{
     try {
 
-        const cart =await Cart.findById({user:req.user._id})
+        const cart =await Cart.findOne({user:req.user._id})
         // ye bhi check krlo jo cart mila hai vo logged in user ka hi hai
-        
-        if(cart){
-            cart.items =[],
-            cart.totalAmount =0;
-             await cart.save();
+        if(!cart){
+            return res.status(200).json({
+                success:true,
+                message:"Cart is already empty."
+            })
         }
+        //here its clear the cart after ordering it
+        cart.items = [];
+        cart.totalAmount = 0;
+        await cart.save();
 
+      
+        return res.status(200).json({
+            success:true,
+            message:"Cart clear successfully.."
+        })
 
     } catch (error:any) {
         return res.status(500).json({

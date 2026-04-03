@@ -15,6 +15,13 @@ import User from "../models/User.js";
 
         let user =await User.findOne({clerkId:userId});//here its the user
         
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found"
+            });
+}
+        
         req.user =user;//here we setup that user
         next();// call the middleware
     } catch (error) {

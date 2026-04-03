@@ -8,6 +8,7 @@ import { CATEGORIES } from '@/constants'
 import CategoryItems from '@/components/CategoryItem'
 import { Product } from '@/constants/types'
 import ProductCard from '@/components/ProductCard'
+import api from '@/constants/api'
 
 export default function Home() {
 
@@ -23,9 +24,20 @@ export default function Home() {
 
   const categories =[{id:'all',name:'All',icon:'grid'},...CATEGORIES]
 
-  const fetchProducts =async()=>{
-    setProducts(dummyProducts)
-    setLoading(false)//make the loaded true
+  const fetchProducts =async()=>{// here its doesn't need to loggged in the user
+    try {
+      const {data} =await api.get("/product")
+      console.log("The product data for homeScreen:",data)
+      if(data.success){
+        setProducts(data.data);//here we setup that product
+      }
+    } catch (error) {
+      console.error('Failed to fetch the product',error)
+    }
+    finally{
+      setLoading(false)
+    }
+  
   }
 
   useEffect(()=>{

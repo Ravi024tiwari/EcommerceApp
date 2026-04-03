@@ -7,15 +7,41 @@ import Header from "@/components/Header";
 import { COLORS } from "@/constants";
 import type { Order, Product } from "@/constants/types";
 import { dummyOrders } from "@/assets/assets";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
+import Toast from "react-native-toast-message";
 
 export default function OrderDetails() {
-    const { id } = useLocalSearchParams();
+    const {getToken} =useAuth();
+    const { id } = useLocalSearchParams();//to fetch the order Id from the url that it will pass from routing to one page to other page
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
 
+     //Here we fetch the Single Order details witht all their UI
     const fetchOrderDetails = async () => {
-        setOrder(dummyOrders.find((order) => order._id === id) as any);
-        setLoading(false);
+        try {
+            setLoading(true)// here its for
+            const token =await getToken();
+
+            const {data} =await api.get(`/orders/${id}`,{//here its fetch the single order detail from the backend
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            })
+            console.log('The single order details from the backend :',data)
+            if(data.success){
+                setOrder(data.data);//here it set the Single Order 
+            }
+        } catch (error:any) {
+            console.error("Failed to fetch the single order:",error)
+            Toast.show({
+                type:'error',
+                text1:"Failed to fetched the single order details",
+            })
+        }
+        finally{
+            setLoading(false)
+        }
     };
 
     useEffect(() => {

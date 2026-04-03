@@ -4,17 +4,38 @@ import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshCon
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants";
 import { dummyProducts } from "@/assets/assets";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
+import Toast from "react-native-toast-message";
 
 export default function AdminProducts() {
     const router = useRouter();
+    const {getToken} =useAuth();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [products, setProducts] = useState([]);
 
     const fetchProducts = async () => {
-        setProducts(dummyProducts as any);
-        setLoading(false);
-        setRefreshing(false);
+       try {
+            const res =await api.get("/product",{params:{limit:999}});//here its fetch all the products for the admin
+            if(res.data.success){
+                setProducts(res?.data?.data);//here we fetch all the products from the backend
+               
+            }
+             console.log('All the products data of admin:',res.data)
+       } catch (error:any) {
+         console.error(error)
+         
+         Toast.show({
+            type:'error',
+            text1:'Failed to fetch products..',
+            text2:error.response?.data?.message ||'Something went wrong'
+         })
+       }
+       finally{
+        setLoading(false)
+        setRefreshing(false)
+       }
     };
 
     useEffect(() => {
@@ -26,8 +47,37 @@ export default function AdminProducts() {
         fetchProducts();
     };
 
+    //here we pass the product id When it call to delete any Product on the database..
+
     const performDelete = async (id: string) => {
-        setProducts(products.filter((product: any) => product._id !== id) as any);
+        try {
+            const token =await getToken();//here its fetch the token from the Clerk
+            const data =await api.delete(`/product/${id}`,{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            })
+
+            console.log('Checking for the deletion of product:',data)
+
+            //now checking for the success of true data  product deletion 
+            if(data.data.success){
+                Toast.show({
+                    type:'success',
+                    text1:'Success',
+                    text2:'Product Deleted '
+                })
+
+                fetchProducts();//after deletion of product fetch all the products again and store it on locally
+            }
+        } catch (error:any) {
+            console.error('Failed to delete Products')
+            Toast.show({
+                type:'error',
+                text1:'Failed to Delete Products',
+                text2:error.response?.data?.message || 'Something went wrong'
+            })
+        }
     };
 
     const deleteProduct = async (id: string) => {
@@ -93,7 +143,7 @@ export default function AdminProducts() {
 
                             <View className="flex-row items-center">
                                 <TouchableOpacity
-                                    onPress={() => router.push(`/admin/products/edit/${product._id}`)}
+                                    onPress={() => router.push(`/admin/products/edit/${product._id}`)}//here this btn is use to edit the product
                                     className="p-2 bg-slate-50 rounded-full mr-2"
                                 >
                                     <Ionicons name="create-outline" size={18} color="#333333" />

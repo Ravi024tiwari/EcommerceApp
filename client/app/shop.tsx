@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { COLORS } from '@/constants'
 import { FlatList } from 'react-native-gesture-handler'
 import ProductCard from '@/components/ProductCard'
+import api from '@/constants/api'
 
 export default function Shop() {
     const [products,setProducts] =useState<Product[]>([])
@@ -21,7 +22,7 @@ export default function Shop() {
     const [hashMore,setHashMore] =useState(true)
     
     //its fetched the data when the components gets loaded
-
+    // here we increase the page Number when we upload the more products
     const fetchProducts =async(pageNumber=1)=>{//agar mujhe number of products fetch krne hai screen par then we must use the pagination
 
         if(pageNumber===1){
@@ -31,19 +32,20 @@ export default function Shop() {
             setLoadingMore(true)
         }
         try {
-            const start =(pageNumber-1)*10;
-            
-            const end =start+10; //here we get only 10 results
 
-            const paginatedData =dummyProducts.slice(start,end);// here we fetch the data from our backend on the basis of the pages
-            if(pageNumber===1){
-                setProducts(paginatedData)
-            }
-            else{
-                setProducts(pre=>[...pre,...paginatedData])
-            }
+             const queryParams:any ={page:pageNumber,limit:10}
 
-            setHashMore(end < dummyProducts.length);
+             const {data} = await api.get("/product",{params:queryParams})
+
+             if(pageNumber===1){
+                setProducts(data.data)
+             }
+             else{
+                setProducts(pre=>[...pre,...data.data])
+             }
+
+
+            setHashMore(data.pagination.page < data.pagination.pages);
             setPage(pageNumber)
 
         } catch (error) {

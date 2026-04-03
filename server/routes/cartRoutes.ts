@@ -15,9 +15,11 @@ CartRouter.put("/item/:productId",protect,updateCartItem)
 
 // remove item from 
 CartRouter.delete('/item/:productId',protect,removeCartItem)
+//hmne remove its from the Cart the functionality nhi likhi hai abhi tak
 
 //clear Cart
-CartRouter.delete("/",protect,clearCart)
+//here its clear that cart 
+CartRouter.delete("/clear",protect,clearCart)
 
 
 export default CartRouter;

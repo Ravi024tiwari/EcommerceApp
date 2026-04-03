@@ -67,7 +67,8 @@ export const getSingleOrder =async(req:Request,res:Response)=>{
 
 export const createOrder =async(req:Request,res:Response)=>{
     try {
-        const {shippingAddress ,notes} =req.body;
+        const {shippingAddress ,notes} =req.body;// here its get the shipping Addres +notes of order
+
         const cart =await Cart.findOne({user:req.user._id}).populate("items.product");
 
         if(!cart || cart.items.length ===0){
@@ -151,7 +152,7 @@ export const createOrder =async(req:Request,res:Response)=>{
 
 export const updateOrderStatus =async(req:Request,res:Response)=>{
     try {
-        const {orderStatus ,paymentStatus} =req.body;
+        const {orderStatus ,paymentStatus} =req.body;// here we get these data from the frontEnd body and here we have to update the backend 
         const order =await Order.findById(req.params.id);
 
         if(!order){
@@ -161,9 +162,10 @@ export const updateOrderStatus =async(req:Request,res:Response)=>{
             })
         }
         if(orderStatus) order.orderStatus =orderStatus;
-        if(paymentStatus) order.paymentStatus =paymentStatus;
 
-        if(orderStatus === "delivered") order.deliveredAt = new Date();
+        if(paymentStatus) order.paymentStatus =paymentStatus;//agar pyment status nhi aaya ot 
+
+        if(orderStatus === 'delivered') order.deliveredAt = new Date();
 
         await order.save();// here we save that current order in db
 

@@ -1,12 +1,18 @@
 import React, { useState } from "react";
-import { ScrollView, Text, TextInput, TouchableOpacity, View, Switch, Image, ActivityIndicator, Modal, FlatList, TouchableWithoutFeedback, Platform, } from "react-native";
+import { ScrollView, Text, TextInput, TouchableOpacity, View, Switch, Image, ActivityIndicator, Modal, FlatList, TouchableWithoutFeedback } from "react-native";
 import Toast from 'react-native-toast-message';
 import { COLORS } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { CATEGORIES } from "@/constants";
+import { useRouter } from "expo-router";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
 
 export default function AddProduct() {
+
+    const router =useRouter();//here add the router hook
+    const {getToken} =useAuth();
 
     const [submitting, setSubmitting] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);
@@ -18,7 +24,8 @@ export default function AddProduct() {
     const [stock, setStock] = useState("");
     const [category, setCategory] = useState("Men");
     const [sizes, setSizes] = useState("");
-    const [images, setImages] = useState<string[]>([]);
+    const [images, setImages] = useState<string[]>([]);// array of images
+    
     const [isFeatured, setIsFeatured] = useState(false);
 
     // PICK MULTIPLE IMAGES (MAX 5)
@@ -45,6 +52,65 @@ export default function AddProduct() {
                 text2: 'Please fill in all required fields'
             });
             return;
+        }
+
+        // here we call the network request to backend from Frontend to fetch the data
+        try {
+            setSubmitting(true)
+            const token =await getToken();// here we get the token from the clerk
+
+            const formdata =new FormData();
+            //now add all the basis filed into the form
+
+            const fields ={
+                name,description,price,
+                stock: stock || '0',
+                category,
+                isFeatured:String(isFeatured),
+                sizes
+            }
+
+            Object.entries(fields).forEach(([key,value])=>formdata.append(key,value))
+
+            //Images 
+            for(const [i,uri] of images.entries()){
+                const filename =`image-${i}.jpg`;
+
+                formdata.append("images",{uri,name:filename ,type:"image/jpeg"} as any)
+            }
+
+            const {data} =await api.post("/product",formdata,{//here we explicity fetch the data from the backend response
+                headers :{
+                    Authorization :`Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                },
+            })
+
+            if(!data.success){
+                throw new Error("Upload failed")
+            }
+
+            Toast.show({
+                type:"success",
+                text1:'Success',
+                text2:'Product created successfully'
+            })
+
+
+            router.replace("/admin/products")//user redirects to product list
+            
+
+        } catch (error:any) {
+            console.error(error)
+
+            Toast.show({
+                type:'error',
+                text1:'failed to create product',
+                text2:error.response?.data?.message || 'Something went wrong.'
+            })
+        }
+        finally{
+            setSubmitting(false)
         }
     };
 
