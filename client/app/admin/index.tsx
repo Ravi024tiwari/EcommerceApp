@@ -3,9 +3,12 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View, ActivityIndicator, RefreshControl } from "react-native";
 import { COLORS, getStatusColor } from "@/constants";
 import { dummyAdminStats } from "@/assets/assets";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
 
 export default function AdminDashboard() {
     const router = useRouter();
+    const {getToken} =useAuth();
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [stats, setStats] = useState({
@@ -17,10 +20,28 @@ export default function AdminDashboard() {
     });
 
     const fetchStats = async () => {
-        setStats(dummyAdminStats as any);
-        setLoading(false);
-        setRefreshing(false);
+        try {
+            const token =await getToken();
+
+            const data =await api.get("/admin/stats",{ // here we call the backend request on each call sending the token to verify the logged in user
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            })
+
+            if(data.data?.success){
+                console.log("The backend data of admin:",data)
+                setStats(data?.data.data)
+            }
+        } catch (error) {
+            console.log("Failed to getch admin Stats:",error);//here the user failed to fetch the response from the backend 
+        }
+        finally{
+            setLoading(false)
+            setRefreshing(false)
+        }
     };
+
 
     useEffect(() => {
         fetchStats();

@@ -5,13 +5,16 @@ import Toast from 'react-native-toast-message';
 import { COLORS, CATEGORIES } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 
-import { dummyProducts } from "@/assets/assets";
+//import { dummyProducts } from "@/assets/assets";
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
 
 
 export default function EditProduct() {
-    const { id } = useLocalSearchParams();
+    const { id } = useLocalSearchParams();//here we fetch the product id that render on this page by using useLocalSearchParams()
     const router = useRouter();
+    const {getToken} =useAuth();//here its fetch Token from the User by using Middleware
 
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -33,21 +36,29 @@ export default function EditProduct() {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const product: any = dummyProducts.find((p) => p._id === id);
-                setName(product.name);
-                setDescription(product.description || "");
-                setPrice(product.price.toString());
-                setStock(product.stock.toString());
-                setCategory(typeof product.category === 'object' ? product.category.name : product.category);
-                setIsFeatured(product.isFeatured);
+                const data = await api.get(`/product/${id}`);//here we fetch that single product from the database
 
-                if (product.sizes) setSizes(Array.isArray(product.sizes) ? product.sizes.join(", ") : product.sizes);
+               // console.log("The single productData:",data)
 
-                if (product.images && Array.isArray(product.images)) {
+                if(data.data.success){
+                    const product =data.data.data;
+                    setName(product.name);
+                    setDescription(product.description || "");
+                    setPrice(product.price.toString());
+                    setStock(product.stock.toString());
+                    setCategory(typeof product.category === 'object' ? product.category.name : product.category);
+                    setIsFeatured(product.isFeatured);
+
+
+                    if (product.sizes) setSizes(Array.isArray(product.sizes) ? product.sizes.join(", ") : product.sizes);
+
+                    if (product.images && Array.isArray(product.images)) {
                     setExistingImages(product.images);
-                } else if (product.images) {
+                    } else if (product.images) {
                     setExistingImages([product.images]);
+                     }
                 }
+                
             } catch (error: any) {
                 console.error("Failed to fetch product:", error);
                 Toast.show({
@@ -91,6 +102,7 @@ export default function EditProduct() {
     };
 
     const handleSubmit = async () => {
+        const token =await getToken();
         if (!name || !price || sizes.length < 1) {
             Toast.show({
                 type: 'error',
@@ -127,7 +139,24 @@ export default function EditProduct() {
                     formData.append("images", { uri, name: filename, type: "image/jpeg" } as any);
                 }
             }
-            router.back();
+
+            //here we update that previous Product with the new Product 
+            const data =await api.put(`/product/${id}`,formData,{
+                headers:{
+                    Authorization:`Bearer ${token}`,
+                    "Content-Type":"multipart/form-data"
+                }
+            })
+            console.log("The updating form data of product :",data)
+            if(data.data.success){
+                Toast.show({
+                    type:'success',
+                    text1:'Success',
+                    text2:'Product updated successfully'
+                })
+            }
+            router.replace("/admin/products");//move the router again on the product list page
+            
         } catch (error: any) {
             console.error("Failed to update product:", error);
             Toast.show({

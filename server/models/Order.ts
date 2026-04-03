@@ -60,8 +60,12 @@ const orderSchema =new Schema<IOrder>({
      },
      orderStatus:{
         type:String,
-        enum:['placed','processing','shipped','delivered','cancelled',],
+        enum:['placed','processing','shipped','delivered','cancelled'],
         default:'placed'
+     },
+     totalAmount:{
+      type:Number,
+      default:0
      },
      subtotal:{
         type:Number,

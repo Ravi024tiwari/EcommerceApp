@@ -2,27 +2,54 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View, ActivityIndicator, RefreshControl, Alert, Modal, TouchableWithoutFeedback, FlatList } from "react-native";
 import { COLORS, getStatusColor } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
-import { dummyOrders, dummyUser } from "@/assets/assets";
+//import { dummyOrders, dummyUser } from "@/assets/assets";
+import { useAuth } from "@clerk/expo";
+import api from "@/constants/api";
+
+
 
 export default function AdminOrders() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [orders, setOrders] = useState([]);
+    const {getToken}= useAuth()
 
     // Status Modal State
     const [statusModalVisible, setStatusModalVisible] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<any>(null);
     const [updating, setUpdating] = useState(false);
 
-    const STATUSES = ["placed", "processing", "shipped", "delivered", "cancelled"];
+    const STATUSES = ['placed','processing','shipped','delivered','cancelled'];
 
     const fetchOrders = async () => {
-        setOrders(dummyOrders.map((order: any) => ({
-            ...order,
-            user: dummyUser
-        })) as any);
-        setLoading(false);
-        setRefreshing(false);
+        console.log("Its calling the fetch all orders of admin panel..")
+        try {
+            setLoading(true)
+            const token =await getToken();
+            if(!token){
+                console.log("User token get Expired :",token);
+                return;
+            }
+
+            console.log('The token data is:',token)
+
+            const data =await api.get("/orders/admin/all",{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            });//here its get that order
+
+            console.log("The order list from backend :",data);
+            if(data.data.success){
+                setOrders(data.data.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch all orders",error)
+            Alert.alert("Error","Failed to load orders")
+        }
+        finally{
+            setLoading(false)
+        }
     };
 
     useEffect(() => {
@@ -40,10 +67,29 @@ export default function AdminOrders() {
     };
 
     const updateStatus = async (newStatus: string) => {
-        if (!selectedOrder) return;
-        setOrders(orders.map((order: any) => order._id === selectedOrder._id ? { ...order, orderStatus: newStatus } : order) as any);
-        setStatusModalVisible(false);
-        setUpdating(false);
+        try {
+            if (!selectedOrder) return;
+    
+            const token =await getToken();
+    
+            const {data} =await api.put(`/orders/${selectedOrder._id}/status`,{
+                 orderStatus:newStatus
+                 },{headers:{
+                Authorization :`Bearer ${token}`
+            }})
+    
+            if(data.success){
+                Alert.alert("Success",'Order status updated successfully..')
+                setStatusModalVisible(false);
+                fetchOrders();// fetch the order 
+            }
+        } catch (error) {
+            console.error("Failed to update Status:",error)
+            Alert.alert('Error','Failed to update Status')
+        }
+        finally{
+            setUpdating(false)
+        }
     };
 
     if (loading && !refreshing) {

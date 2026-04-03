@@ -9,10 +9,12 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { COLORS } from '@/constants'
 import Header from '@/components/Header'
 import { Ionicons } from '@expo/vector-icons'
+import { useAuth } from '@clerk/expo'
+import api from '@/constants/api'
 
 export default function Checkout() {
-
-    const {cartTotal} =useCart()
+   const {getToken} =useAuth()
+    const {cartTotal,clearCart} =useCart()
     const router =useRouter();
 
     const [loading,setLoading] =useState(false)
@@ -28,13 +30,31 @@ export default function Checkout() {
     const total =cartTotal +shipping +tax; //shipping charges are included
 
     const fetchAddress =async()=>{
-        const addrList =dummyAddress;// here we get that dummy address
-        if(addrList.length >0){
-            // find default or first
-            const def =addrList.find((a:any)=>a.isDefault) || addrList[0] ;
-            setSelectedAddress(def as Address);//here we address as of Address type
+        try {
+            const token =await getToken();
+            const {data} =await api.get("/address",{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            })
+            const addrList =data.addresses;//here we get all the address
+            console.log("The address resposne + addList :",addrList)
+
+            if(addrList.length>0 ){
+                const def =addrList.find((a:Address)=>a.isDefault )|| addrList[0];//get the default address
+                setSelectedAddress(def);
+            }
+        } catch (error:any) {
+            console.error("Failed to fetch the address",error)
+            Toast.show({
+                type:'error',
+                text1:'Error',
+                text2:"Failed to load checkout information.."
+            })
         }
-        setPageLoading(false)//here the loading of the page loading is False
+        finally{
+            setPageLoading(false)
+        }
     }
 
     const handlePlaceOrder =async()=>{// during placing the order we have to select the add + type of payment should i select
@@ -56,7 +76,51 @@ export default function Checkout() {
         }
 
         //Cash on Deliver
-        //router.replace("/order")// now render this user to the order page
+        setLoading(true)
+        try {
+            const payload  ={
+                shippingAddress :{
+                    street: selectedAddress.street,
+                    city: selectedAddress.city,
+                    state: selectedAddress.state,
+                    zipCode: selectedAddress.zipCode,
+                    country: selectedAddress.country
+                },
+                notes:"Places via App",
+                paymentMethod:"cash"
+             }
+             console.log("The payload of order-creation :",payload)
+
+             const token =await getToken();
+             const {data} =await api.post("/orders",payload,{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+             })
+             console.log("The response from the backend during creation of new order:",data)
+
+             if(data.success){ //here its call the clear cart
+                await clearCart();//here its clear the cart after payment of that order from the Context
+
+                Toast.show({
+                    type:'success',
+                    text1:'Order placed',
+                    text2:'Your order places successfully'
+                })
+
+                router.replace("/orders")
+             }
+        } catch (error:any) {
+           console.log('Failed to place Order..',error)
+           Toast.show({
+            type:'error',
+            text1:'Failed to place order..',
+            text2:error.response?.data?.message || 'Something went wrong..'
+           })   
+        }
+        finally{
+            setLoading(false)
+        }
     }
 
     useEffect(()=>{

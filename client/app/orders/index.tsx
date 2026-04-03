@@ -1,26 +1,63 @@
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { FlatList, Text, TouchableOpacity, View, ActivityIndicator, ScrollView, Image } from "react-native";
+import React, {  useEffect, useState } from "react";
+import { FlatList, Text, TouchableOpacity, View, ActivityIndicator, ScrollView, Image, Alert } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Header from "@/components/Header";
 import { COLORS, getStatusColor } from "@/constants";
 import type { Order } from "@/constants/types";
 import { dummyOrders, formatDate } from "@/assets/assets";
+import api from "@/constants/api";
+import { useAuth } from "@clerk/expo";
+import Toast from "react-native-toast-message";
 
 export default function Orders() {
     const router = useRouter();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
+    const {getToken,isLoaded,isSignedIn} =useAuth();//here its get the token
 
+    const [orders, setOrders] = useState<Order[]>([]);
+    const [loading, setLoading] = useState(false);
+    
+    //Here we fetch all the orders for the current user from the backend and then we show it on the OrderList
     const fetchOrders = async () => {
-        setOrders(dummyOrders as any[]);
-        setLoading(false);
+        console.log("Fetching user orders...")
+        try {
+            setLoading(true)
+            const token =await getToken();
+            if(!token){
+                console.log("User token get Expired :",token);
+                return;
+            }
+
+            console.log('The token data is:',token)
+
+            const {data} =await api.get("/orders",{
+                headers:{
+                    Authorization:`Bearer ${token}`
+                }
+            });//here its get that order
+
+            console.log("The order list from backend :",data);
+            if(data.success){
+                setOrders(data?.data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch all orders",error)
+            Toast.show({
+                type:'error',
+                text1:'Failed to fetched all orders',
+                text2:"Something went wrong.."
+            })
+        }
+        finally{
+            setLoading(false)
+        }
     };
 
     useEffect(() => {
+        if (!isLoaded || !isSignedIn) return;
         fetchOrders();
-    }, []);
+    }, [isLoaded, isSignedIn]);
 
     return (
         <View className="flex-1 bg-surface" >
