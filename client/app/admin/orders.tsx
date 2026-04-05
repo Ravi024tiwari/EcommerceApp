@@ -89,6 +89,7 @@ export default function AdminOrders() {
         }
         finally{
             setUpdating(false)
+            setRefreshing(false)
         }
     };
 

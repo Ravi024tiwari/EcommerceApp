@@ -47,7 +47,7 @@ await makeAdmin();
 // Here its directly insert data in our database
 //await seedProducts(process.env.MONGODB_URL as string)
 
-app.listen(3000,"0.0.0.0",() => {
+app.listen(Number(port),"0.0.0.0",() => {
     console.log(`Server is running at http://localhost:${port}`);
 });
 
