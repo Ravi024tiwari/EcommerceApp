@@ -10,6 +10,7 @@ export default function Header({title,showBack,showSearch,showCart,showMenu,show
     const router =useRouter();
 
     const {itemCount} =useCart();//here we get the updated cart item quantity by use of useCart context
+
   return (
     <View className='flex-row items-center justify-between px-4 py-3 bg-white '>
         {/**Left Side */}

@@ -4,8 +4,16 @@ import cloudinary from "../config/cloudinary.js";
 
 export const getProducts =async(req:Request,res:Response)=>{// here we set up the query as well from frontend
     try {
-        const {page=1,limit=10} =req.query;//here we get the query from the 
+        const {page=1,limit=10, search, category} =req.query;//here we get the query from the 
         const query:any ={isActive:true}
+
+        if (search) {
+            query.$text = { $search: search as string };
+        }
+
+        if (category) {
+            query.category = category;
+        }
 
         const total =await Product.countDocuments(query);//here its counts the number of documents its have
 

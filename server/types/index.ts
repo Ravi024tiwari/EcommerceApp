@@ -92,6 +92,6 @@ export interface IUser extends Document {
 
 export interface IWishlist extends Document {
     user: Types.ObjectId;
-    products: Types.ObjectId[];
+    products: Types.ObjectId[];//here its the array of products included into it..
     createdAt: Date;
 }

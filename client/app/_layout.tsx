@@ -10,11 +10,14 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ClerkProvider } from '@clerk/expo'
 
 import { tokenCache } from '@clerk/expo/token-cache'
+import {StripeProvider} from '@stripe/stripe-react-native'
 
 
 export default function RootLayout() {
+
+  const publishableKey =process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
  
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY!
+const stripePublishableKey  = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 if (!publishableKey) {
   throw new Error('Add your Clerk Publishable Key to the .env file')
@@ -25,6 +28,7 @@ if (!publishableKey) {
 
     <GestureHandlerRootView >
       <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <StripeProvider publishableKey={stripePublishableKey}>
         <SafeAreaView style={{flex:1}} >
             <StatusBar style="dark" />
         <CartProvider>
@@ -34,6 +38,7 @@ if (!publishableKey) {
           </WishlistProvider>
       </CartProvider>
         </SafeAreaView>
+        </StripeProvider>
       </ClerkProvider>
     </GestureHandlerRootView>
     

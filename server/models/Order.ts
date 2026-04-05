@@ -47,7 +47,7 @@ const orderSchema =new Schema<IOrder>({
      paymentMethod:{
         type:String,
         required:true,
-        enum:['cash','stripe'],
+        enum:['cash','stripe','razorpay'],
         default:'cash'
      },
      paymentStatus:{

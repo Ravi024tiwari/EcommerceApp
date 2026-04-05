@@ -3,6 +3,9 @@ import Order from "../models/Order.js";
 import Cart from "../models/cart.js";
 import Product from "../models/Product.js";
 import User from "../models/User.js";
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string);
 
 //Get User Orders
 // /api/orders
@@ -129,7 +132,6 @@ export const createOrder =async(req:Request,res:Response)=>{
             cart.items =[];
             cart.totalAmount =0;
             await cart.save();
-            //here its update that cart which he already made with their items +totalAmount
         }
 
         return res.status(201).json({
@@ -208,5 +210,36 @@ export const getAllOrders =async(req:Request,res:Response)=>{
             success:false,
             message:error.message
         })
+    }
+}
+
+// Create Stripe Payment Intent
+// POST /api/orders/create-payment-intent
+
+export const createPaymentIntent = async (req:Request, res:Response) => {//its return the id
+    try {
+        const cart = await Cart.findOne({ user: req.user._id });
+        
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ success: false, message: "Cart is empty" });
+        }
+
+        const subtotal = cart.totalAmount;
+        const shippingCost = 2; // Match your createOrder logic
+        const tax = 0;
+        const totalAmount = subtotal + shippingCost + tax; 
+
+        const paymentIntent = await stripe.paymentIntents.create({
+            amount: Math.round(totalAmount * 100), // Stripe expects amount in smallest currency unit
+            currency: 'inr', 
+            automatic_payment_methods: { enabled: true },
+        });
+
+        return res.status(200).json({
+            success: true,
+            clientSecret: paymentIntent.client_secret,//here its send that client secret from the stripe Intent
+        });
+    } catch (error: any) {
+        return res.status(500).json({ success: false, message: error.message });
     }
 }

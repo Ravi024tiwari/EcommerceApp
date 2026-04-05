@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authorize, protect } from "../middlewares/auth.js";
-import { createOrder, getAllOrders, getOrders, getSingleOrder, updateOrderStatus } from "../controllers/orderController.js";
+import { createOrder, getAllOrders, getOrders, getSingleOrder, updateOrderStatus, createPaymentIntent } from "../controllers/orderController.js";
 
 const orderRouter =Router();
 
@@ -12,6 +12,9 @@ orderRouter.get("/:id",protect,getSingleOrder)
 
 // Create Order from cart
 orderRouter.post("/",protect,createOrder)
+
+// Create Stripe Payment Intent
+orderRouter.post("/create-payment-intent",protect,createPaymentIntent)
 
 // Update order status for admin only
 orderRouter.put("/:id/status",protect,authorize("admin"),updateOrderStatus);//here its update the status or the selected order

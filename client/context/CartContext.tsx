@@ -156,7 +156,7 @@ export function CartProvider({children}:{children:ReactNode}){
         }
    }
 
-   const clearCart =async(req:Request,res:Response)=>{
+   const clearCart =async()=>{
       if(!isSignedIn) return;
       try {
          setisLoading(true);
